@@ -1,0 +1,626 @@
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أصوات القرّاء</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+
+<!-- مكتبة اختيار الدولة والتحقق من رقم الهاتف -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css">
+
+<style>
+  :root { --bg:#0a1d18; --panel:#10302a; --panel2:#15413a; --gold:#c9a24b; --gold-soft:#ecd9a3; --text:#f4eedc; --muted:#a9b9ae; --line:rgba(201,162,75,.28); }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body { margin:0; background:var(--bg) radial-gradient(900px 420px at 50% -80px, rgba(201,162,75,.16), transparent 70%) no-repeat; color:var(--text); font-family:"Amiri", serif; font-size:20px; padding-bottom:190px; }
+
+  header { text-align:center; padding:46px 20px 30px;
+           background-image:linear-gradient(45deg, rgba(201,162,75,.05) 25%, transparent 25%, transparent 75%, rgba(201,162,75,.05) 75%),
+                            linear-gradient(45deg, rgba(201,162,75,.05) 25%, transparent 25%, transparent 75%, rgba(201,162,75,.05) 75%);
+           background-size:44px 44px; background-position:0 0, 22px 22px; }
+  header::after { content:"✦"; display:block; margin-top:16px; color:var(--gold); font-size:1.1rem; }
+  h1 { margin:0 0 8px; font-family:"Aref Ruqaa","Amiri",serif; font-weight:700; font-size:3.3rem; line-height:1.3; color:var(--gold-soft); text-shadow:0 2px 28px rgba(201,162,75,.4); }
+  header p { margin:0; color:var(--muted); font-size:1.1rem; }
+  .salat { text-align:center; padding:11px 14px; font-size:1.2rem; color:var(--gold-soft); background:var(--panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+
+  main { max-width:900px; margin:0 auto; padding:24px 20px; }
+  .controls { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+  select, input { font:inherit; padding:11px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--text); flex:1; min-width:180px; }
+  input::placeholder { color:var(--muted); }
+  select:hover, input:hover { border-color:var(--gold); }
+
+  #list { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; }
+  .surah { font:inherit; display:flex; align-items:center; gap:10px; text-align:right; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--panel); color:var(--text); cursor:pointer; }
+  .surah:hover { border-color:var(--gold); background:var(--panel2); }
+  .surah.on { background:var(--gold); border-color:var(--gold); color:#0a1d18; font-weight:700; }
+  .surah small { display:grid; place-items:center; flex-shrink:0; width:32px; height:32px; border:1px solid var(--gold); border-radius:50%; color:var(--gold-soft); font-size:.85rem; font-variant-numeric:tabular-nums; }
+  .surah.on small { border-color:#0a1d18; color:#0a1d18; }
+  #msg { text-align:center; padding:20px; color:var(--muted); }
+  .credit { text-align:center; margin:44px 0 0; font-size:1.1rem; color:var(--gold); }
+  .credit::before, .credit::after { content:"✦"; margin:0 10px; opacity:.7; }
+  .source { text-align:center; margin:8px 0 0; font-size:.85rem; color:var(--muted); }
+
+  .nav { display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:900px; margin:22px auto 0; padding:0 20px; }
+  .nav a { display:block; text-decoration:none; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; text-align:center; font-size:1.25rem; font-weight:700; }
+  .nav a:hover { border-color:var(--gold); background:var(--panel2); }
+  .nav a small { display:block; margin-top:2px; color:var(--muted); font-size:.9rem; font-weight:400; }
+  .nav a:last-child:nth-child(odd) { grid-column:1 / -1; }
+  @media (max-width:520px) { .nav { grid-template-columns:1fr; } }
+  .subhead { display:flex; align-items:center; gap:14px; max-width:900px; margin:0 auto; padding:18px 20px 4px; }
+  .subhead h2 { margin:0; font-family:"Aref Ruqaa","Amiri",serif; font-size:2rem; color:var(--gold-soft); }
+  .back { text-decoration:none; color:var(--gold-soft); border:1px solid var(--line); border-radius:10px; padding:8px 14px; font-size:1.05rem; white-space:nowrap; }
+  .back:hover { border-color:var(--gold); background:var(--panel); }
+  .meta { color:var(--muted); text-align:center; font-size:.95rem; margin:12px 0 0; }
+
+  .next-card { text-align:center; background:var(--panel); border:1px solid var(--gold); border-radius:18px; padding:22px 16px; margin:4px 0 16px; box-shadow:0 0 0 6px rgba(201,162,75,.08); }
+  .next-card .lbl { color:var(--muted); font-size:1.1rem; }
+  .next-card .name { font-family:"Aref Ruqaa","Amiri",serif; font-size:2.3rem; color:var(--gold-soft); line-height:1.4; }
+  .next-card .clock { font-size:3rem; font-variant-numeric:tabular-nums; direction:ltr; letter-spacing:2px; }
+  .next-card .now { color:var(--gold); min-height:1.5em; font-weight:700; }
+  .times { display:grid; gap:8px; }
+  .times div { display:flex; justify-content:space-between; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 16px; }
+  .times div.next { background:var(--gold); border-color:var(--gold); color:#0a1d18; font-weight:700; }
+  .times b { font-variant-numeric:tabular-nums; }
+
+  .checks { display:grid; gap:10px; margin-top:8px; }
+  .chk { display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; cursor:pointer; }
+  .chk.done { border-color:var(--gold); background:var(--panel2); }
+  .chk > span:first-child { font-size:1.3rem; font-weight:700; }
+  .chk .q { color:var(--muted); font-size:.95rem; margin-inline-end:auto; }
+  .chk input { -webkit-appearance:none; appearance:none; display:grid; place-items:center; margin:0; width:32px; height:32px; border:2px solid var(--gold); border-radius:9px; background:transparent; cursor:pointer; }
+  .chk input:checked { background:var(--gold); }
+  .chk input:checked::after { content:"✓"; color:#0a1d18; font-size:1.3rem; font-weight:700; line-height:1; }
+  .tmsg { text-align:center; margin:18px 0 6px; padding:14px 16px; border:1px dashed var(--gold); border-radius:14px; color:var(--gold-soft); font-size:1.2rem; line-height:1.9; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .actions button { flex:1; min-width:140px; font:inherit; padding:11px 14px; border:1px solid var(--gold); border-radius:10px; background:var(--panel); color:var(--text); cursor:pointer; }
+  .actions button:hover { background:var(--panel2); }
+  .actions .danger { border-color:#b5584f; color:#f0b5ae; }
+  .hist-day { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-top:8px; }
+  .hist-day b { color:var(--gold-soft); }
+  .hist-day div { color:var(--muted); font-size:.95rem; margin-top:2px; }
+
+  .card { position:relative; background:var(--panel); border:1px solid var(--gold); border-radius:20px; padding:22px 18px 20px; margin-top:12px; box-shadow:0 0 0 6px rgba(201,162,75,.08), 0 18px 50px rgba(0,0,0,.35); }
+  .card label, .card .lbl2 { display:block; margin:16px 0 6px; color:var(--gold-soft); font-size:1.05rem; }
+  .card label:first-child { margin-top:0; }
+  .card input, .card textarea { display:block; width:100%; min-width:0; font:inherit; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--text); }
+  .card textarea { resize:vertical; }
+  .card input:focus, .card textarea:focus { border-color:var(--gold); }
+  .card input[type=tel] { direction:ltr; text-align:left; }
+
+  /* تنسيق اختيار الدولة */
+  .iti { width:100%; direction:ltr; }
+  .iti input { width:100%; direction:ltr; text-align:left; padding-left:95px !important; }
+  .iti__country-list { background:var(--panel); color:var(--text); border:1px solid var(--gold); }
+  .iti__country:hover, .iti__country.iti__highlight { background:var(--panel2); }
+  .iti__selected-country { background:var(--panel2); color:var(--text); }
+  .iti__dial-code { color:var(--gold-soft); }
+
+  .stars { display:flex; justify-content:center; gap:6px; }
+  .star { font-size:2.7rem; line-height:1; padding:2px 4px; border:0; background:none; color:rgba(244,238,220,.25); cursor:pointer; }
+  .star.on { color:var(--gold); text-shadow:0 0 18px rgba(201,162,75,.55); }
+  .rtxt { text-align:center; color:var(--gold-soft); min-height:1.7em; }
+  .send { display:block; width:100%; margin-top:20px; font:inherit; font-weight:700; font-size:1.25rem; padding:14px; border:0; border-radius:14px; background:var(--gold); color:#0a1d18; cursor:pointer; box-shadow:0 8px 24px rgba(201,162,75,.25); }
+  .send:hover { background:#dcb85f; }
+  .send:disabled { opacity:.6; cursor:wait; }
+  .cmsg { text-align:center; margin-top:12px; min-height:1.5em; }
+  .cmsg.ok { color:var(--gold-soft); }
+  .cmsg.err { color:#f0b5ae; }
+  .card .hp { position:absolute; width:1px; height:1px; padding:0; border:0; opacity:0; overflow:hidden; clip-path:inset(50%); pointer-events:none; }
+
+  footer { position:fixed; bottom:0; right:0; left:0; background:rgba(8,24,20,.94); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border-top:1px solid var(--gold); color:var(--text); padding:14px 18px 16px; box-shadow:0 -10px 40px rgba(0,0,0,.45); }
+  .bar, .seek { max-width:900px; margin:0 auto; display:flex; align-items:center; gap:14px; }
+  .bar { justify-content:space-between; margin-bottom:10px; }
+  .info { min-width:0; }
+  #now { font-size:1.5rem; font-weight:700; line-height:1.2; color:var(--gold-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #who { color:var(--gold); font-size:1rem; }
+  .btns { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+  .btns button { display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:50%; background:transparent; color:var(--text); cursor:pointer; }
+  .btns button:hover { background:rgba(255,255,255,.1); }
+  .btns button:disabled { opacity:.45; cursor:wait; }
+  .btns button svg { width:22px; height:22px; fill:currentColor; }
+  .btns .big { width:58px; height:58px; background:var(--gold); color:#0a1d18; box-shadow:0 0 0 5px rgba(201,162,75,.18); }
+  .btns .big:hover { background:#dcb85f; }
+  .btns .big svg { width:26px; height:26px; }
+  .seek span { font-size:.95rem; color:var(--muted); min-width:44px; text-align:center; font-variant-numeric:tabular-nums; }
+  #seek { -webkit-appearance:none; appearance:none; flex:1; min-width:0; height:6px; padding:0; border:0; border-radius:3px; cursor:pointer;
+          background:linear-gradient(to left, var(--gold) var(--p,0%), rgba(244,238,220,.18) var(--p,0%)); }
+  #seek::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--gold-soft); border:3px solid var(--gold); }
+  #seek::-moz-range-thumb { width:12px; height:12px; border-radius:50%; background:var(--gold-soft); border:3px solid var(--gold); }
+  button:focus-visible, select:focus-visible, input:focus-visible, #seek:focus-visible { outline:3px solid var(--gold-soft); outline-offset:2px; }
+</style>
+</head>
+<body>
+<div id="page-home" class="page">
+<header>
+  <h1>أصوات القرّاء</h1>
+  <p>اختر القارئ ثم السورة واستمع</p>
+</header>
+<div class="salat">اللهم صلِّ وسلِّم وبارك على نبينا محمد ﷺ</div>
+<nav class="nav">
+  <a href="#prayer">مواعيد الصلاة<small>وكم باقي على الأذان</small></a>
+  <a href="#tracker">متابعة صلواتي<small>علّم على كل صلاة بعد أدائها</small></a>
+  <a href="#contact">تواصل معنا<small>رأيك وملاحظاتك تهمّنا</small></a>
+</nav>
+
+<main>
+  <div class="controls">
+    <select id="reciter" aria-label="القارئ"></select>
+    <select id="riwaya" aria-label="الرواية"></select>
+    <input id="search" placeholder="ابحث عن سورة..." aria-label="بحث">
+  </div>
+  <div id="msg">جاري التحميل...</div>
+  <div id="list"></div>
+  <p class="credit">تصميم محمد تامر</p>
+  <p class="source">الأصوات من موقع mp3quran.net</p>
+</main>
+
+<footer>
+  <div class="bar">
+    <div class="info">
+      <div id="now">اختر سورة للاستماع</div>
+      <small id="who"></small>
+    </div>
+    <div class="btns">
+      <button id="prev" aria-label="السورة السابقة"><svg viewBox="0 0 24 24"><path d="M18 5h2v14h-2zM16 12 5 5v14z"/></svg></button>
+      <button id="toggle" class="big" aria-label="تشغيل"></button>
+      <button id="next" aria-label="السورة التالية"><svg viewBox="0 0 24 24"><path d="M4 5h2v14H4zM8 12l11-7v14z"/></svg></button>
+      <button id="dl" aria-label="تحميل السورة"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.3-3.3 1.4 1.4L12 16 6.3 10.3l1.4-1.4 3.3 3.3zM5 19h14v2H5z"/></svg></button>
+    </div>
+  </div>
+  <div class="seek">
+    <span id="cur">0:00</span>
+    <input type="range" id="seek" min="0" max="100" step="0.1" value="0" aria-label="التقدّم">
+    <span id="dur">0:00</span>
+  </div>
+  <audio id="player"></audio>
+</footer>
+</div>
+
+<div id="page-prayer" class="page" hidden>
+  <div class="subhead"><a class="back" href="#home">→ الرئيسية</a><h2>مواعيد الصلاة</h2></div>
+  <main>
+    <div class="controls"><select id="city" aria-label="المدينة"></select></div>
+    <div class="next-card">
+      <div class="lbl">باقي على أذان</div>
+      <div class="name" id="pname">...</div>
+      <div class="clock" id="pclock">--:--:--</div>
+      <div class="now" id="pnow"></div>
+    </div>
+    <div class="times" id="times"></div>
+    <div class="meta" id="pmsg"></div>
+    <div class="meta" id="pdate"></div>
+    <div class="meta" id="pinfo"></div>
+    <p class="meta">المواعيد من aladhan.com وتُحسب تلقائيًا حسب الموقع، وقد تختلف دقائق عن مسجدك. راجع الجهة الرسمية في بلدك.</p>
+  </main>
+</div>
+
+<div id="page-tracker" class="page" hidden>
+  <div class="subhead"><a class="back" href="#home">→ الرئيسية</a><h2>متابعة صلواتي</h2></div>
+  <main>
+    <div class="meta" id="tdate"></div>
+    <div class="checks" id="checks"></div>
+    <div class="tmsg" id="tmsg"></div>
+    <div class="actions">
+      <button id="histBtn">سجل الأيام</button>
+      <button id="clearBtn" class="danger">حذف القائمة</button>
+    </div>
+    <div id="hist" hidden></div>
+    <p class="meta">التسجيل محفوظ على هذا الجهاز وهذا المتصفح فقط.</p>
+  </main>
+</div>
+
+<div id="page-contact" class="page" hidden>
+  <div class="subhead"><a class="back" href="#home">→ الرئيسية</a><h2>تواصل معنا</h2></div>
+  <main>
+    <p class="meta">رأيك يهمّنا. اكتب بياناتك وتقييمك وملاحظتك.</p>
+    <div class="card">
+      <label for="cName">الاسم</label>
+      <input id="cName" maxlength="60" autocomplete="name" placeholder="اسمك">
+      <label for="cPhone">رقم الهاتف</label>
+      <input id="cPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك">
+      <div class="lbl2" id="rateLbl">التقييم</div>
+      <div class="stars" id="stars" role="radiogroup" aria-labelledby="rateLbl"></div>
+      <div class="rtxt" id="rtxt"></div>
+      <label for="cNote">ملاحظتك</label>
+      <textarea id="cNote" rows="4" maxlength="500" placeholder="اكتب ملاحظتك هنا..."></textarea>
+      <input id="cHp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button id="cSend" class="send">إرسال</button>
+      <div id="cMsg" class="cmsg" role="status"></div>
+    </div>
+  </main>
+</div>
+
+<!-- مكتبة الهاتف -->
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
+
+<script>
+  const API = "https://mp3quran.net/api/v3/";
+  let reciters = [], suwar = [], moshaf = null, available = [], playing = null;
+
+  const $ = id => document.getElementById(id);
+
+  // إعداد اختيار الدولة والتحقق من رقم الهاتف
+  const phoneInput = $("cPhone");
+
+  const iti = window.intlTelInput(phoneInput, {
+    initialCountry: "eg",
+    separateDialCode: true,
+    nationalMode: true,
+    strictMode: true,
+    autoPlaceholder: "aggressive",
+    loadUtils: () => import(
+      "https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/utils.js"
+    )
+  });
+
+  async function start() {
+    try {
+      const [r, s] = await Promise.all([
+        fetch(API + "reciters?language=ar").then(x => x.json()),
+        fetch(API + "suwar?language=ar").then(x => x.json())
+      ]);
+      reciters = r.reciters;
+      suwar = s.suwar;
+      $("reciter").innerHTML = reciters.map((c, i) => `<option value="${i}">${c.name}</option>`).join("");
+      $("msg").textContent = "";
+      chooseReciter();
+    } catch (e) {
+      $("msg").textContent = "تعذّر تحميل البيانات. تأكد من اتصال الإنترنت وأعد فتح الصفحة.";
+    }
+  }
+
+  function chooseReciter() {
+    const c = reciters[$("reciter").value];
+    $("riwaya").innerHTML = c.moshaf.map((m, i) => `<option value="${i}">${m.name}</option>`).join("");
+    chooseRiwaya();
+  }
+
+  function chooseRiwaya() {
+    const c = reciters[$("reciter").value];
+    moshaf = c.moshaf[$("riwaya").value];
+    available = moshaf.surah_list.split(",").map(Number);
+    showList();
+  }
+
+  function showList() {
+    const q = $("search").value.trim();
+    $("list").innerHTML = suwar
+      .filter(s => available.includes(s.id) && s.name.includes(q))
+      .map(s => `<button class="surah ${s.id === playing ? "on" : ""}" onclick="play(${s.id})"><small>${s.id}</small>${s.name}</button>`)
+      .join("");
+  }
+
+  function play(n) {
+    playing = n;
+    $("player").src = moshaf.server + String(n).padStart(3, "0") + ".mp3";
+    $("player").play();
+    const name = suwar.find(s => s.id === n).name;
+    $("now").textContent = name;
+    $("who").textContent = reciters[$("reciter").value].name;
+    showList();
+  }
+
+  function step(d) {
+    if (!playing) return;
+    const i = available.indexOf(playing) + d;
+    if (i >= 0 && i < available.length) play(available[i]);
+  }
+
+  $("reciter").onchange = chooseReciter;
+  $("riwaya").onchange = chooseRiwaya;
+  $("search").oninput = showList;
+  $("next").onclick = () => step(1);
+  $("prev").onclick = () => step(-1);
+  $("player").onended = () => step(1);
+
+  const player = $("player");
+  const PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>';
+  const PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+  $("toggle").innerHTML = PLAY;
+
+  function fmt(s) {
+    if (!isFinite(s)) return "0:00";
+    const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = String(Math.floor(s % 60)).padStart(2, "0");
+    return h ? h + ":" + String(m).padStart(2, "0") + ":" + x : m + ":" + x;
+  }
+
+  $("toggle").onclick = () => {
+    if (!player.src) return;
+    player.paused ? player.play() : player.pause();
+  };
+  player.onplay = () => { $("toggle").innerHTML = PAUSE; $("toggle").setAttribute("aria-label", "إيقاف مؤقت"); };
+  player.onpause = () => { $("toggle").innerHTML = PLAY; $("toggle").setAttribute("aria-label", "تشغيل"); };
+  player.onloadedmetadata = () => { $("dur").textContent = fmt(player.duration); };
+  player.ontimeupdate = () => {
+    const p = player.duration ? player.currentTime / player.duration * 100 : 0;
+    $("seek").value = p;
+    $("seek").style.setProperty("--p", p + "%");
+    $("cur").textContent = fmt(player.currentTime);
+  };
+
+  $("dl").onclick = async () => {
+    if (!playing) return;
+    const url = player.src;
+    $("dl").disabled = true;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("fail");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(await res.blob());
+      a.download = $("now").textContent + " - " + $("who").textContent + ".mp3";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 15000);
+    } catch (e) {
+      window.open(url, "_blank");
+    }
+    $("dl").disabled = false;
+  };
+
+  $("seek").oninput = () => {
+    if (player.duration) player.currentTime = $("seek").value / 100 * player.duration;
+  };
+
+  const PAGES = ["home", "prayer", "tracker", "contact"];
+  function route() {
+    let h = location.hash.slice(1);
+    if (!PAGES.includes(h)) h = "home";
+    PAGES.forEach(p => { $("page-" + p).hidden = (p !== h); });
+    player.pause();
+    window.scrollTo(0, 0);
+    h === "prayer" ? prayerStart() : prayerStop();
+    h === "tracker" ? trackerStart() : trackerStop();
+  }
+  window.onhashchange = route;
+
+  const CITIES = [
+    { n:"القاهرة", lat:30.0444, lon:31.2357 }, { n:"الإسكندرية", lat:31.2001, lon:29.9187 },
+    { n:"الجيزة", lat:30.0131, lon:31.2089 }, { n:"المنصورة", lat:31.0409, lon:31.3785 },
+    { n:"أسيوط", lat:27.1809, lon:31.1837 }, { n:"الأقصر", lat:25.6872, lon:32.6396 },
+    { n:"أسوان", lat:24.0889, lon:32.8998 }, { n:"مكة المكرمة", lat:21.3891, lon:39.8579 },
+    { n:"المدينة المنورة", lat:24.5247, lon:39.5692 }, { n:"الرياض", lat:24.7136, lon:46.6753 },
+    { n:"دبي", lat:25.2048, lon:55.2708 }, { n:"الكويت", lat:29.3759, lon:47.9774 },
+    { n:"عمّان", lat:31.9454, lon:35.9284 }
+  ];
+  const NAMES = { Fajr:"الفجر", Sunrise:"الشروق", Dhuhr:"الظهر", Asr:"العصر", Maghrib:"المغرب", Isha:"العشاء" };
+  let pData = null, pDay = "", pTimer = null, pReload = null;
+
+  $("city").innerHTML = '<option value="gps">موقعي الحالي</option>' + CITIES.map((c, i) => `<option value="${i}">${c.n}</option>`).join("");
+  try { $("city").value = localStorage.getItem("city") || "0"; } catch (e) { $("city").value = "0"; }
+  if (!$("city").value) $("city").value = "0";
+  $("city").onchange = () => {
+    try { localStorage.setItem("city", $("city").value); } catch (e) {}
+    loadPrayer();
+  };
+
+  const secs = t => { const [h, m] = t.slice(0, 5).split(":").map(Number); return h * 3600 + m * 60; };
+  const fmt12 = t => { const [h, m] = t.slice(0, 5).split(":").map(Number); return (h % 12 || 12) + ":" + String(m).padStart(2, "0") + " " + (h >= 12 ? "م" : "ص"); };
+  const two = n => String(n).padStart(2, "0");
+
+  function nowSecs(tz) {
+    const p = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour:"2-digit", minute:"2-digit", second:"2-digit", hourCycle:"h23" }).formatToParts(new Date());
+    const g = t => +p.find(x => x.type === t).value;
+    return g("hour") * 3600 + g("minute") * 60 + g("second");
+  }
+
+  function getPlace() {
+    const v = $("city").value;
+    if (v !== "gps") return Promise.resolve(CITIES[v]);
+    return new Promise((ok, no) => {
+      if (!navigator.geolocation) return no();
+      navigator.geolocation.getCurrentPosition(p => ok({ lat:p.coords.latitude, lon:p.coords.longitude }), no, { timeout:10000 });
+    });
+  }
+
+  async function loadPrayer() {
+    $("pmsg").textContent = "جاري تحميل المواعيد...";
+    let c, note = "";
+    try { c = await getPlace(); }
+    catch (e) { c = CITIES[0]; $("city").value = "0"; note = "تعذّر تحديد موقعك فتم استخدام القاهرة. "; }
+    const d = new Date();
+    pDay = d.toDateString();
+    const ds = two(d.getDate()) + "-" + two(d.getMonth() + 1) + "-" + d.getFullYear();
+    try {
+      const j = await fetch(`https://api.aladhan.com/v1/timings/${ds}?latitude=${c.lat}&longitude=${c.lon}`).then(r => r.json());
+      const t = j.data.timings;
+      pData = {
+        tz: j.data.meta.timezone,
+        list: ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"].map(k => ({ k, name:NAMES[k], t:t[k].slice(0, 5), s:secs(t[k]) })),
+        sunrise: t.Sunrise.slice(0, 5)
+      };
+      const rows = [pData.list[0], { k:"Sunrise", name:NAMES.Sunrise, t:pData.sunrise }, ...pData.list.slice(1)];
+      $("times").innerHTML = rows.map(r => `<div data-k="${r.k}"><span>${r.name}</span><b>${fmt12(r.t)}</b></div>`).join("");
+      const h = j.data.date.hijri;
+      $("pdate").textContent = h ? `${h.day} ${h.month.ar} ${h.year} هـ` : "";
+      $("pinfo").textContent = `${$("city").selectedOptions[0].text} — آخر تحديث ${two(d.getHours())}:${two(d.getMinutes())}`;
+      $("pmsg").textContent = note;
+      tick();
+    } catch (e) {
+      $("pmsg").textContent = note + "تعذّر تحميل المواعيد. تأكد من الإنترنت وجرّب مرة أخرى.";
+    }
+  }
+
+  function tick() {
+    if (!pData) return;
+    if (new Date().toDateString() !== pDay) { loadPrayer(); return; }
+    const now = nowSecs(pData.tz);
+    let next = pData.list.find(p => p.s > now), diff;
+    if (next) diff = next.s - now;
+    else { next = pData.list[0]; diff = 86400 - now + next.s; }
+    $("pname").textContent = next.name;
+    $("pclock").textContent = two(Math.floor(diff / 3600)) + ":" + two(Math.floor(diff % 3600 / 60)) + ":" + two(diff % 60);
+    const here = pData.list.find(p => now >= p.s && now < p.s + 60);
+    $("pnow").textContent = here ? "حان الآن موعد أذان " + here.name : "";
+    document.querySelectorAll("#times [data-k]").forEach(e => e.classList.toggle("next", e.dataset.k === next.k));
+  }
+
+  function prayerStart() {
+    prayerStop();
+    loadPrayer();
+    pTimer = setInterval(tick, 1000);
+    pReload = setInterval(loadPrayer, 30 * 60 * 1000);
+  }
+  function prayerStop() { clearInterval(pTimer); clearInterval(pReload); }
+
+  const PR = [["Fajr","الفجر"], ["Dhuhr","الظهر"], ["Asr","العصر"], ["Maghrib","المغرب"], ["Isha","العشاء"]];
+  const LOGKEY = "prayerLog";
+  const MSGS = [
+    "ما شاء الله، تقبّل الله صلاتك. ثبّتك الله على المحافظة عليها.",
+    "«إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا» (النساء: ١٠٣)",
+    "«حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ» (البقرة: ٢٣٨)",
+    "بارك الله فيك، فاضل صلاة واحدة وتكمّل يومك. كمّل على نفس الطريق."
+  ];
+  let tDay = "", tTimer = null;
+  const dayKey = () => { const d = new Date(); return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()); };
+  const longDate = d => d.toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  function loadLog() { try { return JSON.parse(localStorage.getItem(LOGKEY)) || {}; } catch (e) { return {}; } }
+  function saveLog(o) { try { localStorage.setItem(LOGKEY, JSON.stringify(o)); } catch (e) {} }
+
+  function renderTracker() {
+    tDay = dayKey();
+    const today = loadLog()[tDay] || {};
+    $("tdate").textContent = longDate(new Date());
+    $("checks").innerHTML = PR.map(([k, n]) =>
+      `<label class="chk ${today[k] ? "done" : ""}"><span>صلاة ${n}</span><span class="q">هل صليت؟</span><input type="checkbox" data-k="${k}" ${today[k] ? "checked" : ""}></label>`).join("");
+    $("checks").querySelectorAll("input").forEach(i => { i.onchange = () => toggle(i.dataset.k, i.checked); });
+    const n = PR.filter(([k]) => today[k]).length;
+    $("tmsg").textContent = n === 0 ? "علّم على كل صلاة بعد ما تؤديها. أعاننا الله وإياك على المحافظة عليها."
+                          : n === 5 ? "أتممت صلوات يومك كلها، تقبّل الله منك وجزاك خيرًا."
+                          : MSGS[n - 1];
+    if (!$("hist").hidden) renderHist();
+  }
+
+  function toggle(k, on) {
+    const log = loadLog(), t = log[tDay] || {};
+    if (on) t[k] = true; else delete t[k];
+    if (Object.keys(t).length) log[tDay] = t; else delete log[tDay];
+    saveLog(log);
+    renderTracker();
+  }
+
+  function renderHist() {
+    const log = loadLog(), days = Object.keys(log).sort().reverse();
+    $("hist").innerHTML = days.length ? days.map(d => {
+      const done = PR.filter(([k]) => log[d][k]).map(([, n]) => n);
+      return `<div class="hist-day"><b>${longDate(new Date(d + "T12:00:00"))}</b><div>${done.length} من 5 — ${done.join("، ")}</div></div>`;
+    }).join("") : '<div class="meta">لا توجد أيام مسجّلة بعد.</div>';
+  }
+
+  $("histBtn").onclick = () => {
+    $("hist").hidden = !$("hist").hidden;
+    $("histBtn").textContent = $("hist").hidden ? "سجل الأيام" : "إخفاء السجل";
+    if (!$("hist").hidden) renderHist();
+  };
+  $("clearBtn").onclick = () => {
+    if (!confirm("هتتحذف كل الأيام المسجّلة. متأكد؟")) return;
+    try { localStorage.removeItem(LOGKEY); } catch (e) {}
+    renderTracker();
+  };
+
+  function trackerStart() {
+    trackerStop();
+    renderTracker();
+    tTimer = setInterval(() => { if (dayKey() !== tDay) renderTracker(); }, 30000);
+  }
+  function trackerStop() { clearInterval(tTimer); }
+
+  // ===== تواصل معنا (الإرسال لبوت تيليجرام) =====
+  const TG_TOKEN = "8776378005:AAG_tz-QkY1h0Hdy_Hlb7C0DLcYbtm4AdKE";
+  const TG_CHAT = "5621659197";
+  const RLABELS = ["ضعيف", "مقبول", "جيد", "جيد جدًا", "ممتاز"];
+  let rating = 0;
+
+  function drawStars() {
+    $("stars").innerHTML = [1, 2, 3, 4, 5].map(n =>
+      `<button type="button" class="star ${n <= rating ? "on" : ""}" role="radio" aria-checked="${n === rating}" aria-label="${n} من 5" onclick="setRate(${n})">★</button>`).join("");
+    $("rtxt").textContent = rating ? RLABELS[rating - 1] + " (" + rating + "/5)" : "اضغط على النجوم للتقييم";
+  }
+  function setRate(n) { rating = n; drawStars(); }
+  drawStars();
+
+  function cmsg(t, c) { $("cMsg").textContent = t; $("cMsg").className = "cmsg " + (c || ""); }
+
+  $("cSend").onclick = async () => {
+    const name = $("cName").value.trim();
+    const note = $("cNote").value.trim();
+
+    if ($("cHp").value) return cmsg("تم الإرسال، شكرًا لك!", "ok");
+    if (!name) return cmsg("اكتب اسمك من فضلك.", "err");
+
+    // انتظار تحميل بيانات التحقق من أرقام الدول
+    await iti.promise;
+
+    // التحقق من رقم الهاتف حسب الدولة المختارة
+    if (!phoneInput.value.trim())
+      return cmsg("اكتب رقم هاتفك من فضلك.", "err");
+
+    if (!iti.isValidNumber())
+      return cmsg("رقم الهاتف غير صحيح للدولة المختارة.", "err");
+
+    // الحصول على الرقم بالصيغة الدولية مع مفتاح الدولة
+    const phone = iti.getNumber();
+
+    if (!TG_TOKEN || !TG_CHAT)
+      return cmsg("الإرسال لم يُفعّل بعد: بيانات البوت غير موجودة.", "err");
+
+    let last = 0;
+    try { last = +localStorage.getItem("lastSend") || 0; } catch (e) {}
+    if (Date.now() - last < 10000)
+      return cmsg("استنى عشر ثوانى قبل ما ترسل رسالة تانية.", "err");
+
+    const text = [
+      "📩 رسالة جديدة من الموقع",
+      "👤 الاسم: " + name,
+      "📞 الهاتف: " + phone,
+      "⭐ التقييم: " + (rating ? "★".repeat(rating) + "☆".repeat(5 - rating) + " (" + rating + "/5)" : "بدون تقييم"),
+      "📝 الملاحظة: " + (note || "—")
+    ].join("\n");
+
+    $("cSend").disabled = true;
+    cmsg("جاري الإرسال...");
+    try {
+      const waNumber = phone.replace(/\D/g, "");
+const waUrl = "https://wa.me/" + waNumber;
+
+const r = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    chat_id: TG_CHAT,
+    text: text,
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: "💬 التواصل عبر واتساب",
+            url: waUrl
+          }
+        ]
+      ]
+    }
+  })
+});
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.description);
+      try { localStorage.setItem("lastSend", String(Date.now())); } catch (e) {}
+      $("cName").value = "";
+      phoneInput.value = "";
+      iti.setCountry("eg");
+      $("cNote").value = "";
+      rating = 0;
+      drawStars();
+      cmsg("تم الإرسال، شكرًا لك!", "ok");
+    } catch (e) {
+      cmsg("تعذّر الإرسال، حاول مرة أخرى.", "err");
+    }
+    $("cSend").disabled = false;
+  };
+
+  start();
+  route();
+</script>
+</body>
+</html>
